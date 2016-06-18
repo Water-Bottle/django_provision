@@ -1,0 +1,223 @@
+---
+
+- name: Have sources been downloaded?
+  stat: path=/srv/oss_sources/httpd-{{ httpd_version }}.tar.gz
+  register: apachehttpd_source
+
+- name: Download httpd sources
+  get_url:
+    url: "{{ httpd_public_source }}"
+    dest: /srv/oss_sources/httpd-{{ httpd_version }}.tar.gz
+  when: not apachehttpd_source.stat.exists
+
+- name: Download apr sources
+  get_url:
+    url: "{{ apache_apr_source }}"
+    dest: /srv/oss_sources/apr-{{ apache_apr_version }}.tar.gz
+  when: not apachehttpd_source.stat.exists
+
+- name: Download apr-util sources
+  get_url:
+    url: "{{ apache_aprutil_source }}"
+    dest: /srv/oss_sources/apr-util-{{ apache_aprutil_version }}.tar.gz
+  when: not apachehttpd_source.stat.exists
+
+- name: Calculate md5sum of httpd sources
+  stat:
+    path: /srv/oss_sources/httpd-{{ httpd_version }}.tar.gz
+    get_md5: yes
+  register: httpd_source_checksum
+
+- name: Calculate md5sum of apr sources
+  stat:
+    path: /srv/oss_sources/apr-{{ apache_apr_version }}.tar.gz
+    get_md5: yes
+  register: apr_source_checksum
+
+- name: Calculate md5sum of apr-util sources
+  stat:
+    path: /srv/oss_sources/apr-util-{{ apache_aprutil_version }}.tar.gz
+    get_md5: yes
+  register: aprutil_source_checksum
+
+- name: Throw error if httpd sources have md5 mis-match
+  fail: msg="MD5 checksum for httpd source code does not match downloaded file!!"
+  when: "'{{httpd_source_checksum.stat.md5}}' != '{{httpd_md5_checksum}}'"
+
+- name: Throw error if apr sources have md5 mis-match
+  fail: msg="MD5 checksum for apr source code does not match downloaded file!!"
+  when: "'{{apr_source_checksum.stat.md5}}' != '{{apache_apr_md5_checksum}}'"
+
+- name: Throw error if aprutil sources have md5 mis-match
+  fail: msg="MD5 checksum for aprutil source code does not match downloaded file!!"
+  when: "'{{aprutil_source_checksum.stat.md5}}' != '{{apache_aprutil_md5_checksum}}'"
+
+- name: Extract http sources
+  unarchive:
+    src: /srv/oss_sources/httpd-{{ httpd_version }}.tar.gz
+    dest: /srv/oss_sources/
+    copy: no
+  when: not apachehttpd_source.stat.exists
+
+- name: Extract apr sources
+  unarchive:
+    src: /srv/oss_sources/apr-{{ apache_apr_version }}.tar.gz
+    dest: /srv/oss_sources/
+    copy: no
+  when: not apachehttpd_source.stat.exists
+
+- name: Extract apr-util sources
+  unarchive:
+    src: /srv/oss_sources/apr-util-{{ apache_aprutil_version }}.tar.gz
+    dest: /srv/oss_sources/
+    copy: no
+  when: not apachehttpd_source.stat.exists
+
+- name: Move apr to srclib
+  command: mv /srv/oss_sources/apr-{{ apache_apr_version }} /srv/oss_sources/httpd-{{ httpd_version }}/srclib/apr
+  when: not apachehttpd_source.stat.exists
+
+- name: Move aprutil to srclib
+  command: mv /srv/oss_sources/apr-util-{{ apache_aprutil_version }} /srv/oss_sources/httpd-{{ httpd_version }}/srclib/apr-util
+  when: not apachehttpd_source.stat.exists
+
+# For compiling instructions,
+# ref: http://theurbanpenguin.com/wp/index.php/apache-install-2-4-6-from-source-on-centos-6-4/
+
+- name: Configure and compile httpd
+  shell: cd /srv/oss_sources/httpd-{{ httpd_version }}/ && {{ item }}
+  with_items:
+    - ./configure --enable-so --with-included-apr --enable-mods-shared=reallyall --with-mpm=worker
+    - make
+  when: not apachehttpd_source.stat.exists
+
+- name: Install httpd with sudo
+  become: yes
+  become_method: sudo
+  shell: make install
+  args:
+    chdir: "/srv/oss_sources/httpd-{{ httpd_version }}/"
+  notify:
+    - restart apache-httpd
+  when: not apachehttpd_source.stat.exists
+
+- name: Create www group on system
+  become: yes
+  become_method: sudo
+  group:
+    name: www
+    state: present
+
+- name: Create apache user on system
+  become: yes
+  become_method: sudo
+  user:
+    name: apache
+    group: www
+    password: "{{ apache_password | password_hash('sha512') }}"
+
+- name: Update ownership of apache install location
+  become: yes
+  become_method: sudo
+  file:
+    path: /usr/local/apache2
+    owner: apache
+    group: www
+    state: directory
+    recurse: yes
+  when: not apachehttpd_source.stat.exists
+
+# startup script is modified version of /usr/local/apache2/bin/apachectl
+# it's been edited to support chkconfig
+# ref: http://www.mickgenie.com/apache-service-httpd-does-not-support-chkconfig/
+- name: Copy over startup script
+  become: yes
+  become_method: sudo
+  copy:
+    src: httpd.init
+    dest: /etc/init.d/httpd
+    mode: 755
+
+- name: Update /etc/httpd symbolic link
+  become: yes
+  become_method: sudo
+  file:
+    src: /usr/local/apache2/conf
+    dest: /etc/httpd
+    state: link
+    owner: apache
+    group: www
+    mode: 0777
+
+- name: Update /var/log/httpd symbolic link
+  become: yes
+  become_method: sudo
+  file:
+    src: /usr/local/apache2/logs
+    dest: /var/log/httpd
+    state: link
+    owner: apache
+    group: www
+    mode: 0777
+
+- name: start apache-httpd
+  become: yes
+  become_method: sudo
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: Is mod_wsgi downloaded?
+  stat: path=/srv/oss_sources/mod_wsgi-{{ mod_wsgi_version }}.tar.gz
+  register: modwsgi_source
+
+- name: Download mod_wsgi sources
+  get_url:
+    url: "{{ mod_wsgi_source }}"
+    dest: /srv/oss_sources/mod_wsgi-{{ mod_wsgi_version }}.tar.gz
+  when: not modwsgi_source.stat.exists
+
+- name: Calculate md5sum of mod_wsgi sources
+  stat:
+    path: /srv/oss_sources/mod_wsgi-{{ mod_wsgi_version }}.tar.gz
+    get_md5: yes
+  register: modwsgi_source_checksum
+
+- name: Throw error if mod_wsgi sources have md5 mis-match
+  fail: msg="MD5 checksum for mod_wsgi source code does not match downloaded file!!"
+  when: "'{{modwsgi_source_checksum.stat.md5}}' != '{{mod_wsgi_md5_checksum}}'"
+
+- name: Extract mod_wsgi sources
+  unarchive:
+    src: /srv/oss_sources/mod_wsgi-{{ mod_wsgi_version }}.tar.gz
+    dest: /srv/oss_sources/
+    copy: no
+  when: not modwsgi_source.stat.exists
+
+# ref: http://serverfault.com/a/628728
+- name: Configure and compile mod_wsgi
+  shell: cd /srv/oss_sources/mod_wsgi-{{ mod_wsgi_version }} && {{ item }}
+  with_items:
+    - ./configure --with-python=/srv/oss_sources/COMPILED_PYTHON/bin/python2.7 LDFLAGS="-Wl,-rpath=/srv/oss_sources/COMPILED_PYTHON/lib" --with-apxs=/usr/local/apache2/bin/apxs
+    - make
+  when: not modwsgi_source.stat.exists
+
+- name: Install mod_wsgi
+  become: yes
+  become_method: sudo
+  shell: make install
+  args:
+    chdir: "/srv/oss_sources/mod_wsgi-{{ mod_wsgi_version }}"
+  when: not modwsgi_source.stat.exists
+
+- name: Update ownership of apache install location (for mod_wsgi)
+  become: yes
+  become_method: sudo
+  file:
+    path: /usr/local/apache2
+    owner: apache
+    group: www
+    state: directory
+    recurse: yes
+  when: not modwsgi_source.stat.exists

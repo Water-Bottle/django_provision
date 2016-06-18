@@ -1,0 +1,28 @@
+---
+
+# Python 2.7 sources and md5 checksum
+python2_version: 2.7.11
+python2_source: https://www.python.org/ftp/python/2.7.11/Python-2.7.11.tgz
+python2_md5_checksum: 6b6076ec9e93f05dd63e47eb9c15728b
+
+# HTTPD source path and md5 checksum
+httpd_version: 2.4.20
+httpd_public_source: http://www-us.apache.org/dist//httpd/httpd-{{ httpd_version }}.tar.gz
+httpd_md5_checksum: e725c268624737a163dc844e28f720d1
+
+apache_apr_version: 1.5.2
+apache_apr_source: http://www-us.apache.org/dist//apr/apr-{{ apache_apr_version }}.tar.gz
+apache_apr_md5_checksum: 98492e965963f852ab29f9e61b2ad700
+
+apache_aprutil_version: 1.5.4
+apache_aprutil_source: http://www-us.apache.org/dist//apr/apr-util-{{ apache_aprutil_version }}.tar.gz
+apache_aprutil_md5_checksum: 866825c04da827c6e5f53daff5569f42
+
+mod_wsgi_version: 4.5.2
+mod_wsgi_source: https://github.com/GrahamDumpleton/mod_wsgi/archive/{{ mod_wsgi_version }}.tar.gz
+mod_wsgi_md5_checksum: e5275a616b7677d49ffa7e568fefb5b1
+
+# apache user password
+apache_password: '123456'
+
+

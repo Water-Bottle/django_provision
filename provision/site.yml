@@ -2,6 +2,14 @@
 
 - hosts: all
 
+  vars_files:
+  - env_vars/general.yml
+
   roles:
    - ping_test
+   - base
+   - install_python27
+   - apache_httpd
+
+
 

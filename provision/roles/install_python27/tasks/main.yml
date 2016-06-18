@@ -1,0 +1,47 @@
+---
+
+- name: Directory to store OSS source-code
+  become: yes
+  become_method: sudo
+  file:
+    path: /srv/oss_sources
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0775
+
+- name: Have sources been downloaded?
+  stat: path=/srv/oss_sources/Python-{{ python2_version }}.tgz
+  register: python_2_7_source
+
+- name: Download Python sources
+  get_url:
+    url: "{{ python2_source }}"
+    dest: /srv/oss_sources/Python-{{ python2_version }}.tgz
+  when: not python_2_7_source.stat.exists
+
+- name: Calculate md5sum of Python sources
+  stat:
+    path: /srv/oss_sources/Python-{{ python2_version }}.tgz
+    get_md5: yes
+  register: python_2_7_source_checksum
+
+- name: Throw error if Python sources have md5 mis-match
+  fail: msg="MD5 checksum for Python source code does not match downloaded file!!"
+  when: "'{{python_2_7_source_checksum.stat.md5}}' != '{{python2_md5_checksum}}'"
+
+- name: Extract Python source code
+  unarchive:
+    src: /srv/oss_sources/Python-{{ python2_version }}.tgz
+    dest: /srv/oss_sources/
+    copy: no
+  when: not python_2_7_source.stat.exists
+
+# ref: http://stackoverflow.com/a/26657830
+- name: Configure, compile and install Python
+  shell: cd /srv/oss_sources/Python-{{ python2_version }} && {{ item }}
+  with_items:
+    - ./configure --enable-shared --with-system-ffi --with-system-expat --enable-unicode=ucs4 --prefix=$(pwd)/../COMPILED_PYTHON LDFLAGS="-L$(pwd)/../COMPILED_PYTHON/extlib/lib -Wl,--rpath=$(pwd)/../COMPILED_PYTHON/lib -Wl,--rpath=$(pwd)/../COMPILED_PYTHON/extlib/lib" CPPFLAGS="-I$(pwd)/../COMPILED_PYTHON/extlib/include"
+    - make
+    - make altinstall
+  when: not python_2_7_source.stat.exists
