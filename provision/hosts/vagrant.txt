@@ -1,0 +1,10 @@
+[webservers]
+
+
+[webservers:vars]
+ansible_user=NA
+ansible_connection=ssh
+ansible_ssh_user=NA
+ansible_ssh_pass=XXXX
+
+

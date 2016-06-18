@@ -1,0 +1,6 @@
+---
+
+- name: Ping via Ansible
+  ping:
+
+
