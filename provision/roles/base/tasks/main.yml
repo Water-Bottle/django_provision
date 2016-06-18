@@ -7,9 +7,12 @@
   apt: name="{{ item }}" state=present
   with_items:
    - python-pip
+   - python-virtualenv
    - build-essential
    - libpcre3-dev
    - git
+   - libmysqlclient-dev
+   - python-dev
 
 - name: Directory to store OSS source-code
   become: yes

@@ -12,4 +12,5 @@
    - apache_httpd
    - mysql_db
    - backend_django_source
+   - backend_django_config
 

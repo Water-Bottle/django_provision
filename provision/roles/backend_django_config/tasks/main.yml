@@ -1,0 +1,40 @@
+---
+
+- name: enable production settings
+  copy:
+    src: "__init__.py"
+    dest: "{{ backend_server_path }}/hackchat/settings/__init__.py"
+
+- name: Creating app log directory
+  become: yes
+  become_method: sudo
+  file:
+    dest: /var/log/waterbottle/
+    state: directory
+    owner: apache
+    group: www
+    mode: 0777
+
+- name: Creating directory for static files
+  become: yes
+  become_method: sudo
+  file:
+    dest: /srv/static/
+    state: directory
+    owner: apache
+    group: www
+    mode: 0777
+
+- name: Install requirements.txt
+  pip:
+    chdir: "{{ backend_server_path }}"
+    requirements: requirements.txt
+    virtualenv: "{{ backend_virtualenv_path }}"
+
+- name: Execute manage.py collectstatic
+  become: yes
+  become_user: apache
+  shell: /srv/sources/waterbottle_django/venv/bin/python2.7 manage.py collectstatic --noinput
+  args:
+    chdir: "{{ backend_server_path }}/"
+

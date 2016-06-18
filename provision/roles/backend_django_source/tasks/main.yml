@@ -10,10 +10,10 @@
     group: "{{ ansible_user }}"
     mode: 0775
 
-- name: Delete *.pyc files in {{ sources_root }}/
-  shell: find . -name "*.pyc" -delete
-  args:
-    chdir: "{{ sources_root }}/"
+#- name: Delete *.pyc files in {{ sources_root }}/
+#  shell: find . -name "*.pyc" -delete
+#  args:
+#    chdir: "{{ sources_root }}/"
 
 - name: Clone backend_django repository
   git:

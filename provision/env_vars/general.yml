@@ -33,4 +33,5 @@ sources_root: /srv/sources
 # django specific
 backend_repo: https://github.com/Water-Bottle/water_bottle_backend.git
 backend_server_path: "{{ sources_root }}/waterbottle_django"
+backend_virtualenv_path: "{{ backend_server_path }}/venv"
 backend_tag: simple_state
