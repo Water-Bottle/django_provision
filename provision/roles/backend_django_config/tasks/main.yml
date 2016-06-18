@@ -68,3 +68,13 @@
 #  copy:
 #    src: "wsgi.py"
 #    dest: "{{ backend_server_path }}/hackchat/wsgi.py"
+
+
+# ref: http://stackoverflow.com/a/24068570/198660
+- name: Create basic admin user
+  become: yes
+  become_user: apache
+  shell: echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'myemail@example.com', 'password')" | /srv/sources/waterbottle_django/venv/bin/python2.7 manage.py shell
+  args:
+    chdir: "{{ backend_server_path }}/"
+
