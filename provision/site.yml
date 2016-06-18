@@ -10,6 +10,6 @@
    - base
    - install_python27
    - apache_httpd
-
+   - mysql_db
 
 
