@@ -199,7 +199,7 @@
 - name: Configure and compile mod_wsgi
   shell: cd /srv/oss_sources/mod_wsgi-{{ mod_wsgi_version }} && {{ item }}
   with_items:
-    - ./configure --with-python=/srv/oss_sources/COMPILED_PYTHON/bin/python2.7 LDFLAGS="-Wl,-rpath=/srv/oss_sources/COMPILED_PYTHON/lib" --with-apxs=/usr/local/apache2/bin/apxs
+    - ./configure --with-apxs=/usr/local/apache2/bin/apxs
     - make
   when: not modwsgi_source.stat.exists
 

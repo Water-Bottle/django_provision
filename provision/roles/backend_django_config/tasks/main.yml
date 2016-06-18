@@ -25,6 +25,15 @@
     group: www
     mode: 0777
 
+- name: Create python2.7 virtualenv with pip
+  pip:
+    chdir: "{{ backend_server_path }}"
+    name: pip
+    version: 8.1.2
+    virtualenv: "{{ backend_virtualenv_path }}"
+
+#    virtualenv_python: "/srv/oss_sources/COMPILED_PYTHON/bin/python2.7"
+
 - name: Install requirements.txt
   pip:
     chdir: "{{ backend_server_path }}"
@@ -38,3 +47,24 @@
   args:
     chdir: "{{ backend_server_path }}/"
 
+- name: Delete existing django database
+  become: yes
+  become_method: sudo
+  mysql_db: name=waterbottle state=absent
+
+- name: Create empty django database
+  become: yes
+  become_method: sudo
+  mysql_db: name=waterbottle state=present
+
+- name: Execute manage.py migrate
+  become: yes
+  become_user: apache
+  shell: /srv/sources/waterbottle_django/venv/bin/python2.7 manage.py migrate
+  args:
+    chdir: "{{ backend_server_path }}/"
+
+#- name: copy over wsgi.py
+#  copy:
+#    src: "wsgi.py"
+#    dest: "{{ backend_server_path }}/hackchat/wsgi.py"

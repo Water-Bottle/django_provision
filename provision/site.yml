@@ -8,9 +8,11 @@
   roles:
    - ping_test
    - base
-   - install_python27
+###########################   - install_python27
    - apache_httpd
    - mysql_db
    - backend_django_source
    - backend_django_config
+   - httpd_config
+
 

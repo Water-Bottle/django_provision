@@ -1,0 +1,41 @@
+---
+
+- name: Copy over httpd.conf
+  become: yes
+  become_method: sudo
+  template:
+    src: httpd.conf.j2
+    dest: /etc/httpd/httpd.conf
+    owner: apache
+    group: www
+    mode: 0644
+
+- name: Copy over httpd-mpm.conf
+  become: yes
+  become_method: sudo
+  copy:
+    src: "httpd-mpm.conf"
+    dest: /etc/httpd/extra/httpd-mpm.conf
+    owner: apache
+    group: www
+    mode: 0644
+
+- name: Copy over waterbottle.conf
+  become: yes
+  become_method: sudo
+  template:
+    src: waterbottle.conf.j2
+    dest: /etc/httpd/extra/waterbottle.conf
+    owner: apache
+    group: www
+    mode: 0644
+
+- name: Restart httpd service
+  become: yes
+  become_method: sudo
+  shell: service httpd restart
+  register: out
+- debug: var=out.stdout_lines
+
+
+

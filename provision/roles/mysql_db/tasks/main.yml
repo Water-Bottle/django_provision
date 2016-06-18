@@ -35,3 +35,19 @@
     - ::1
     - localhost
 
+- name: Copy root.cnf.j2 to /etc/my.cnf
+  become: yes
+  become_method: sudo
+  template: src=root.cnf.j2 dest=/etc/my.cnf
+
+- name: Copy root.cnf.j2 to /root/.my.cnf
+  become: yes
+  become_method: sudo
+  template: src=root.cnf.j2 dest=/root/.my.cnf
+
+- name: Restart mysql service
+  become: yes
+  become_method: sudo
+  service: name=mysql state=restarted enabled=yes
+
+

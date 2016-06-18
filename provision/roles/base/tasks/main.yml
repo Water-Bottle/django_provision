@@ -13,6 +13,7 @@
    - git
    - libmysqlclient-dev
    - python-dev
+   - zlib1g-dev
 
 - name: Directory to store OSS source-code
   become: yes

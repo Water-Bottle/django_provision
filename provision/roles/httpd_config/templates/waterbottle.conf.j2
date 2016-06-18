@@ -1,0 +1,55 @@
+
+<VirtualHost *:80>
+
+    ServerAdmin you@example.com
+    ServerName {{ansible_hostname}}
+    ServerAlias waterbottle
+
+
+    <Directory /srv/sources/waterbottle_django/hackchat>
+        <Files wsgi.py>
+            Require all granted
+        </Files>
+    </Directory>
+
+
+    WSGIDaemonProcess waterbottle.debug processes=4 threads=30 display-name=%{GROUP}
+    WSGIProcessGroup waterbottle.debug
+    WSGIApplicationGroup %{GLOBAL}
+
+    WSGIScriptAlias / /srv/sources/waterbottle_django/hackchat/wsgi.py
+
+    Alias /static/ /srv/static/
+    <Directory /srv/static/>
+        Options FollowSymLinks
+        Require all granted
+    </Directory>
+
+
+    <FilesMatch "\.(pdf|flv|jpg|jpeg|png|gif|js|css|swf|JPG)$">
+        ExpiresActive On
+        ExpiresDefault "access plus 30 days"
+        FileETag None
+        Header set Cache-Control "max-age=172800, public"
+    </FilesMatch>
+
+    # Always set following headers
+    Header set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "POST, GET, OPTIONS, DELETE, PUT"
+    Header always set Access-Control-Max-Age "1000"
+    Header always set Access-Control-Allow-Headers "x-requested-with, Content-Type, origin, authorization, accept, client-security-token"
+
+    # Add rewrite rule to respond with 200 SUCCESS on every OPTIONS request
+    RewriteEngine On
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ $1 [R=200,L]
+
+    # Pass authentication data to application
+    # ref: http://stackoverflow.com/a/18564966
+    WSGIPassAuthorization On
+
+
+
+</VirtualHost>
+
+
