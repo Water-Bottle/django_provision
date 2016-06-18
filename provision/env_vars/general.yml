@@ -26,3 +26,11 @@ mod_wsgi_md5_checksum: e5275a616b7677d49ffa7e568fefb5b1
 apache_password: '123456'
 mysql_root_password: sqlsql
 
+
+# PATHS
+sources_root: /srv/sources
+
+# django specific
+backend_repo: https://github.com/Water-Bottle/water_bottle_backend.git
+backend_server_path: "{{ sources_root }}/waterbottle_django"
+backend_tag: simple_state

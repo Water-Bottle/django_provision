@@ -1,0 +1,26 @@
+---
+
+- name: Create directory to hold source code
+  become: yes
+  become_method: sudo
+  file:
+    path: "{{ sources_root }}/"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0775
+
+- name: Delete *.pyc files in {{ sources_root }}/
+  shell: find . -name "*.pyc" -delete
+  args:
+    chdir: "{{ sources_root }}/"
+
+- name: Clone backend_django repository
+  git:
+    repo: "{{ backend_repo }}"
+    dest: "{{ backend_server_path }}"
+    version: "{{ backend_tag }}"
+    accept_hostkey: yes
+    force: yes
+    update: yes
+
