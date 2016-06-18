@@ -14,5 +14,8 @@
    - backend_django_source
    - backend_django_config
    - httpd_config
+########   - meteor_setup
+########   - frontend_meteor_source
+   - ejabberd_setup
 
 

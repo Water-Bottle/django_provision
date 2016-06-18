@@ -1,0 +1,28 @@
+---
+
+- name: Installing Ejabberd
+  apt: pkg=ejabberd update_cache=yes
+
+- name: Unregister Ejabberd admin user (if there already...)
+  become: yes
+  become_method: sudo
+  shell: ejabberdctl unregister admin localhost
+
+- name: Create Ejabberd admin user
+  become: yes
+  become_method: sudo
+  shell: ejabberdctl register admin localhost password
+
+- name: Installing Ejabberd's Config file
+  copy:
+    src: ejabberd.cfg
+    dest: /etc/ejabberd/ejabberd.cfg
+
+- name: Restart Ejabberd service
+  become: yes
+  become_method: sudo
+  shell: service ejabberd restart
+
+#
+#- name: Installing Ejabberd's Config file in /etc/ejabberd/ejabberd.yml
+#  template: src=ejabberd.yml dest=/etc/ejabberd/ejabberd.yml force=yes

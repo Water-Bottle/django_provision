@@ -1,0 +1,8 @@
+---
+
+- name: Setup Meteor on the droplet
+  become: yes
+  become_method: sudo
+  shell: curl https://install.meteor.com/ | sh
+
+

@@ -35,3 +35,10 @@ backend_repo: https://github.com/Water-Bottle/water_bottle_backend.git
 backend_server_path: "{{ sources_root }}/waterbottle_django"
 backend_virtualenv_path: "{{ backend_server_path }}/venv"
 backend_tag: master
+
+# meteor specific
+frontend_repo: https://github.com/Water-Bottle/hackchat-meteor.git
+frontend_server_path: "{{ sources_root }}/meteor_bottle"
+frontend_tag: master
+
+
